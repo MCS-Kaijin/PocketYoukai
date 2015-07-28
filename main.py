@@ -127,11 +127,11 @@ gd = Boss('Gashasdokuro',500,50)
 en = Enemy('Toire no Hanako-san',20,2,50)
 en = Enemy('Kuchisake Onna',20,2,500)
 en = Enemy('Dodomeki',20,4,1000)
-en = Enemy('Corrupt Koma Inu',40,10,750)
+en = Enemy('Corrupt Koma Inu',30,10,750)
 en = Enemy('Eritategoromo',10,2,1500)
 en = Enemy('Nopperabou',25,5,1500)
 en = Enemy('Kejourou',25,25,500)
-en = Enemy('Ubagabi',40,15,100)
+en = Enemy('Ubagabi',30,15,100)
 
 # locations
 lc = Location(None, 'The building is very cold!')
@@ -248,7 +248,7 @@ class game(Scene):
 		if user.gender == 0: cls = ['Shaman','Priest']
 		else: cls = ['Shrine Maiden','Priestess']
 		cls = [cls[0],'Warrior','No-Class',cls[1],'Samurai','Kami','Emperor']
-		text(cls[user._class],'Courier New',50,5,25,6)
+		text(cls[user._class],'Courier New',25,5,25,6)
 		text(self.status,'Courier New',125/12,self.w,55,4)
 		if self.in_battle: self.battle()
 		if self.shopping: self.shop()

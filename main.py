@@ -198,7 +198,7 @@ class game(Scene):
 			self.in_battle = False
 		if user.hp <= 0:
 			with open('death.txt','w') as f:
-				f.write('{} was killed by {} at level {}'.format(user.name, self.enemy, user._level))
+				f.write('{} was killed by {} at level {}'.format(user.name, self.enemy.name, user._level))
 			os.remove('save')
 	
 	def attack(self, move):

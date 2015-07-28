@@ -30,7 +30,13 @@ else:
 		xp = int(f.readline().strip())
 		yen = int(f.readline().strip())
 		familiar = f.readline().strip()
-		if familiar == 'None': familiar = None
+		if familiar == 'None':
+			familiar = None
+		else:
+			class tmp(object):
+				def __init__(self, attack):
+					self.attack = attack
+			familiar = tmp(int(familiar))
 
 class Player(object):
 	defending = False
@@ -47,7 +53,7 @@ class Player(object):
 	def save(self):
 		with open('save', 'w') as f:
 			f.truncate()
-			f.write('{}\n{}\n{}\n{}\n{}\n{}\n{}\n'.format(self.name, self.gender, self._class, self._level, self.hp, self._xp, self.money, self.familiar))
+			f.write('{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}'.format(self.name, self.gender, self._class, self._level, self.hp, self._xp, self.money, self.familiar.attack))
 	def level_up(self):
 		self._level += 1
 		self.hp += self._level*10
@@ -135,7 +141,7 @@ mv = Move('Swordplay','melee',5)
 mv = Move('Higuchi Inu','magic',15)
 mv = Move('Mizu','magic',10)
 if user.familiar:
-	mv = Move('Summon','magic',(2*user._level)+(user._level-1))
+	mv = Move('Summon','magic',user.familiar.attack)
 
 
 class game(Scene):
@@ -250,7 +256,7 @@ class game(Scene):
 	def touch_ended(self, touch):
 		x, y = touch.location
 		
-		if y >= self.h-100 and not self.show_movelist:
+		if y >= self.h-100 and self.in_battle and not self.show_movelist:
 			tmp = [True,True,True]
 			for i in range(0, 7):
 				tmp.append(False)
@@ -258,11 +264,12 @@ class game(Scene):
 			if tmp:
 				self.in_battle = False
 				if not user.familiar:
-					mv = Move('Summon','magic',(2*user._level)+(user._level-1))
+					mv = Move('Summon','magic',self.enemy.attack)
 					self.setup()
 				user.familiar = self.enemy
 				self.status = 'Successfully captured {}!'.format(self.enemy.name)
 				self.enemy = None
+				self.in_battle = False
 		
 		if x >= (self.w/2)-75 and x <= (self.w/2)+75 and y >= self.h-55 and y <= self.h-30 and not self.in_battle and not self.shopping:
 			self.in_battle = True

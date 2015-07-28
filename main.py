@@ -19,6 +19,7 @@ if not os.path.exists('save'):
 	hp = 10
 	xp = 0
 	yen = 0
+	familiar = None
 else:
 	with open('save', 'r') as f:
 		nm = f.readline().strip()
@@ -28,10 +29,12 @@ else:
 		hp = int(f.readline().strip())
 		xp = int(f.readline().strip())
 		yen = int(f.readline().strip())
+		familiar = f.readline().strip()
+		if familiar == 'None': familiar = None
 
 class Player(object):
 	defending = False
-	def __init__(self, name, gender, cls, level, hp, xppt, yen):
+	def __init__(self, name, gender, cls, level, hp, xppt, yen, familiar):
 		self.name = name
 		self.gender = int(gender)
 		self._class = int(cls)
@@ -40,10 +43,11 @@ class Player(object):
 		self.lvlup = self._level*15
 		self._xp = int(xppt)
 		self.money = int(yen)
+		self.familiar = familiar
 	def save(self):
 		with open('save', 'w') as f:
 			f.truncate()
-			f.write('{}\n{}\n{}\n{}\n{}\n{}\n{}'.format(self.name, self.gender, self._class, self._level, self.hp, self._xp, self.money))
+			f.write('{}\n{}\n{}\n{}\n{}\n{}\n{}\n'.format(self.name, self.gender, self._class, self._level, self.hp, self._xp, self.money, self.familiar))
 	def level_up(self):
 		self._level += 1
 		self.hp += self._level*10
@@ -65,7 +69,7 @@ class Player(object):
 	def pay(self, yen):
 		self.money -= yen
 		self.save()
-user = Player(nm, gdr, cls, level, hp, xp, yen)
+user = Player(nm, gdr, cls, level, hp, xp, yen, familiar)
 user.save()
 
 locations = []
@@ -130,7 +134,8 @@ mv = Move('Kick','melee',1)
 mv = Move('Swordplay','melee',5)
 mv = Move('Higuchi Inu','magic',15)
 mv = Move('Mizu','magic',10)
-
+if user.familiar:
+	mv = Move('Summon','magic',(2*user._level)+(user._level-1))
 
 
 class game(Scene):
@@ -169,7 +174,7 @@ class game(Scene):
 		text(str(self.enemy.hp),'Courier New',25,25,self.h-55,6)
 		no_fill()
 		rect(0,0,self.w,100)
-		rect(0,self.h,self.w,-100)
+		rect(0,self.h-100,self.w,100)
 		
 		if self.show_movelist:
 			self.list_moves()
@@ -294,5 +299,18 @@ class game(Scene):
 			self.show_movelist = True
 		elif x >= 120 and x <= self.w and y <= 100 and y >= 50+(25/2) and not self.show_movelist:
 			user.defending = True
+		elif y >= self.h-100 and not self.show_movelist:
+			tmp = [True,True,True]
+			for i in range(0, 7):
+				tmp.append(False)
+			tmp = random.choice(tmp)
+			if tmp:
+				self.in_battle = False
+				if not user.familiar:
+					mv = Move('Summon',(2*user._level)+(user._level-1))
+					self.setup()
+				user.familiar = self.status
+				self.status = 'Successfully captured {}!'.format(self.enemy.name)
+				self.enemy = None
 
 run(game(), PORTRAIT)

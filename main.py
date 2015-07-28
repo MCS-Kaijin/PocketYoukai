@@ -30,12 +30,12 @@ else:
 		xp = int(f.readline().strip())
 		yen = int(f.readline().strip())
 		familiar = f.readline().strip()
+		class tmp(object):
+			def __init__(self, attack):
+				self.attack = attack
 		if familiar == 'None':
 			familiar = None
 		else:
-			class tmp(object):
-				def __init__(self, attack):
-					self.attack = attack
 			familiar = tmp(int(familiar))
 
 class Player(object):
@@ -53,10 +53,15 @@ class Player(object):
 	def save(self):
 		with open('save', 'w') as f:
 			f.truncate()
-			f.write('{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}'.format(self.name, self.gender, self._class, self._level, self.hp, self._xp, self.money, self.familiar.attack))
+			f.write('{}\n{}\n{}\n{}\n{}\n{}\n{}\n'.format(self.name, self.gender, self._class, self._level, self.hp, self._xp, self.money))
+			if self.familiar:
+				f.write(str(self.familiar.attack))
+			else:
+				f.write('0')
 	def level_up(self):
 		self._level += 1
 		self.hp += self._level*10
+		self.familiar.attack += self._level*2
 		if self._class != 2 and self._level == 10: self._class += 3
 		elif self._class != 2 and self._level == 15: self._class += 2
 		self.save()
@@ -270,6 +275,9 @@ class game(Scene):
 				self.status = 'Successfully captured {}!'.format(self.enemy.name)
 				self.enemy = None
 				self.in_battle = False
+				user.save()
+			else:
+				user.hp -= self.enemy.attack
 		
 		if x >= (self.w/2)-75 and x <= (self.w/2)+75 and y >= self.h-55 and y <= self.h-30 and not self.in_battle and not self.shopping:
 			self.in_battle = True

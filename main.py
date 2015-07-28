@@ -250,6 +250,20 @@ class game(Scene):
 	def touch_ended(self, touch):
 		x, y = touch.location
 		
+		if y >= self.h-100 and not self.show_movelist:
+			tmp = [True,True,True]
+			for i in range(0, 7):
+				tmp.append(False)
+			tmp = random.choice(tmp)
+			if tmp:
+				self.in_battle = False
+				if not user.familiar:
+					mv = Move('Summon','magic',(2*user._level)+(user._level-1))
+					self.setup()
+				user.familiar = self.enemy
+				self.status = 'Successfully captured {}!'.format(self.enemy.name)
+				self.enemy = None
+		
 		if x >= (self.w/2)-75 and x <= (self.w/2)+75 and y >= self.h-55 and y <= self.h-30 and not self.in_battle and not self.shopping:
 			self.in_battle = True
 		elif x <= self.w and y >= self.h-85 and y <= self.h-60 and not self.in_battle and not self.shopping:
@@ -299,18 +313,5 @@ class game(Scene):
 			self.show_movelist = True
 		elif x >= 120 and x <= self.w and y <= 100 and y >= 50+(25/2) and not self.show_movelist:
 			user.defending = True
-		elif y >= self.h-100 and not self.show_movelist:
-			tmp = [True,True,True]
-			for i in range(0, 7):
-				tmp.append(False)
-			tmp = random.choice(tmp)
-			if tmp:
-				self.in_battle = False
-				if not user.familiar:
-					mv = Move('Summon',(2*user._level)+(user._level-1))
-					self.setup()
-				user.familiar = self.status
-				self.status = 'Successfully captured {}!'.format(self.enemy.name)
-				self.enemy = None
 
 run(game(), PORTRAIT)

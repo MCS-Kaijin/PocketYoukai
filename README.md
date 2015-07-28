@@ -6,3 +6,5 @@ Though much of the story is cryptic and shrouded in mystery, this much is certai
 
 # Help!
 Even though I love Japanese folklore and legends, I do not know every single one nor do I have the time to add them if I did know them all. If anyone out there knows of any that aren't here, then please add them to the 'enemies' section like en = Enemy('NAME', HP, XP-YEILD, MONEY-DROP)
+
+For more information on any of the youkai, pay a visit to [yokai.com](http://youkai.com)

@@ -57,11 +57,11 @@ class Player(object):
 			if self.familiar:
 				f.write(str(self.familiar.attack))
 			else:
-				f.write('0')
+				f.write('None')
 	def level_up(self):
 		self._level += 1
 		self.hp += self._level*10
-		self.familiar.attack += self._level*2
+		if self.familiar: self.familiar.attack += self._level*2
 		if self._class != 2 and self._level == 10: self._class += 3
 		elif self._class != 2 and self._level == 15: self._class += 2
 		self.save()
@@ -148,6 +148,12 @@ mv = Move('Mizu','magic',10)
 if user.familiar:
 	mv = Move('Summon','magic',user.familiar.attack)
 
+if os.path.exists('exploration'):
+	for l in locations:
+		for s in open('exploration','r').read().split('\n'):
+			if l.text == s:
+				locations.remove(l)
+
 
 class game(Scene):
 	enemy = None
@@ -171,7 +177,7 @@ class game(Scene):
 		background(0,1,1)
 		if self.enemy is None:
 			self.enemy = random.choice(enemies)
-			self.enemy.hp *= user._level
+			self.enemy.hp += (user._level*5)
 			self.enemy.attack = (2*user._level)+(user._level-1)
 			self.enh = self.enemy.hp
 		stroke(0,0,0)
@@ -199,7 +205,10 @@ class game(Scene):
 		if user.hp <= 0:
 			with open('death.txt','w') as f:
 				f.write('{} was killed by {} at level {}'.format(user.name, self.enemy.name, user._level))
-			os.remove('save')
+			if os.path.exists('save'):
+				os.remove('save')
+			if os.path.exists('exploration'):
+				os.remove('exploration')
 	
 	def attack(self, move):
 		self.enemy.hp -= move.attack+(2*(user._level-1))
@@ -288,6 +297,13 @@ class game(Scene):
 				loc = random.choice(locations)
 				self.status = loc.text
 				locations.remove(loc)
+				spots = ''
+				if os.path.exists('exploration'):
+					with open('exploration', 'r') as f:
+						spots = f.read()
+				with open('exploration', 'w') as f:
+					f.truncate()
+					f.write('{}\n{}'.format(loc.text,spots))
 				if loc.boss:
 					def tmp():
 						self.enemy = loc.boss

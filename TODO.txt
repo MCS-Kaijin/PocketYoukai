@@ -1,4 +1,3 @@
 • Always be adding more moves
 • Always be adding more enemies
 • Always be adding more more locations
-• Make player earn new moves with leveling up

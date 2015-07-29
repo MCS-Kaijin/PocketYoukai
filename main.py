@@ -20,6 +20,7 @@ if not os.path.exists('save'):
 	xp = 0
 	yen = 0
 	familiar = None
+	tainted = False
 else:
 	with open('save', 'r') as f:
 		nm = f.readline().strip()
@@ -30,6 +31,7 @@ else:
 		xp = int(f.readline().strip())
 		yen = int(f.readline().strip())
 		familiar = f.readline().strip()
+		tainted = f.readline().strip()
 		class tmp(object):
 			def __init__(self, attack):
 				self.attack = attack
@@ -37,51 +39,8 @@ else:
 			familiar = None
 		else:
 			familiar = tmp(int(familiar))
-
-class Player(object):
-	defending = False
-	def __init__(self, name, gender, cls, level, hp, xppt, yen, familiar):
-		self.name = name
-		self.gender = int(gender)
-		self._class = int(cls)
-		self._level = int(level)
-		self.hp = int(hp)
-		self.lvlup = self._level*15
-		self._xp = int(xppt)
-		self.money = int(yen)
-		self.familiar = familiar
-	def save(self):
-		with open('save', 'w') as f:
-			f.truncate()
-			f.write('{}\n{}\n{}\n{}\n{}\n{}\n{}\n'.format(self.name, self.gender, self._class, self._level, self.hp, self._xp, self.money))
-			if self.familiar:
-				f.write(str(self.familiar.attack))
-			else:
-				f.write('None')
-	def level_up(self):
-		self._level += 1
-		self.hp += self._level*10
-		if self.familiar: self.familiar.attack += self._level*2
-		if self._class != 2 and self._level == 10: self._class += 3
-		elif self._class != 2 and self._level == 15: self._class += 2
-		self.save()
-	def add_xp(self, xppt):
-		self._xp += xppt
-		if self._xp == self.lvlup:
-			self.level_up()
-		elif self._xp > self.lvlup:
-			xppt = self.lvlup - self._xp
-			self.level_up()
-			self.add_xp(xppt)
-		self.save()
-	def gain_money(self, yen):
-		self.money += yen
-		self.save()
-	def pay(self, yen):
-		self.money -= yen
-		self.save()
-user = Player(nm, gdr, cls, level, hp, xp, yen, familiar)
-user.save()
+		if tainted == 'True': tainted = True
+		else: tainted = False
 
 locations = []
 enemies = []
@@ -91,6 +50,13 @@ class Move(object):
 	def __init__(self, name, type, attack):
 		self.name = name
 		self.type = type
+		self.attack = attack
+		moves.append(self)
+
+class Special(object):
+	def __init__(self, name, attack):
+		self.name = name
+		self.type = 'holy'
 		self.attack = attack
 		moves.append(self)
 
@@ -116,6 +82,58 @@ class Location(object):
 		self.boss = boss
 		self.text = text
 		locations.append(self)
+
+class Player(object):
+	defending = False
+	def __init__(self, name, gender, cls, level, hp, xppt, yen, familiar):
+		self.name = name
+		self.gender = int(gender)
+		self._class = int(cls)
+		self._level = int(level)
+		self.hp = int(hp)
+		self.lvlup = self._level*15
+		self._xp = int(xppt)
+		self.money = int(yen)
+		self.familiar = familiar
+		self.tainted = tainted
+	def save(self):
+		with open('save', 'w') as f:
+			f.truncate()
+			f.write('{}\n{}\n{}\n{}\n{}\n{}\n{}\n'.format(self.name, self.gender, self._class, self._level, self.hp, self._xp, self.money))
+			if self.familiar:
+				f.write(str(self.familiar.attack))
+			else:
+				f.write('None')
+			f.write(str(self.tainted) or 'False')
+	def level_up(self):
+		self._level += 1
+		self.hp += self._level*10
+		if self.familiar: self.familiar.attack += self._level*2
+		if self._class != 2 and self._level == 10: self._class += 3
+		elif self._class != 2 and self._level == 15: self._class += 2
+		if self._level == 10 and not self.tainted:
+			sp = Special('Pray',100)
+			for move in moves:
+				if move.type == 'magic':
+					moves.remove(move)
+		self.save()
+	def add_xp(self, xppt):
+		self._xp += xppt
+		if self._xp == self.lvlup:
+			self.level_up()
+		elif self._xp > self.lvlup:
+			xppt = self.lvlup - self._xp
+			self.level_up()
+			self.add_xp(xppt)
+		self.save()
+	def gain_money(self, yen):
+		self.money += yen
+		self.save()
+	def pay(self, yen):
+		self.money -= yen
+		self.save()
+user = Player(nm, gdr, cls, level, hp, xp, yen, familiar, tainted)
+user.save()
 
 
 
@@ -166,6 +184,8 @@ class game(Scene):
 	shopping = False
 	
 	def list_moves(self):
+		if user._level >= 10 and user._level <= 15:
+			self.setup()
 		fill(0,1,1)
 		stroke(0,0,0)
 		stroke_weight(4)
@@ -219,6 +239,9 @@ class game(Scene):
 		if user.defending:
 			user.hp -= self.enemy.attack/2
 			user.defending = False
+		if move.type == 'magic' and not user.tainted:
+			user.tainted = True
+			user.save()
 	
 	def shop(self):
 		fill(0,1,1)

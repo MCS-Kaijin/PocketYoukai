@@ -273,13 +273,17 @@ class game(Scene):
 		if cls == 0: self.movelist = magic
 		elif cls == 1: self.movelist = other
 		else: self.movelist = moves
-		y = 0
+		y = 30
 		for move in range(0, ((user._level/3)+1)*3):
 			try:
-				self.mv_dictionaries.append({'x': 5, 'y': self.w-y, 'move': self.movelist[move]})
+				self.mv_dictionaries.append({'x': 5, 'y': self.h-y, 'move': self.movelist[move]})
 				y += 30
 			except:
 				pass
+		for move in self.movelist:
+			if move.name == 'Summon':
+				self.mv_dictionaries.append({'x': 5, 'y': self.h-y, 'move': move})
+				break
 
 	def draw(self):
 		background(0,1,1)

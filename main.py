@@ -121,7 +121,7 @@ class Location(object):
 
 # bosses (or any special enemy that can only be found a certain way)
 rg = Boss('Ryuugami',1000,100)
-gd = Boss('Gashasdokuro',500,50)
+gd = Boss('Gashadokuro',500,50)
 
 # enemies
 en = Enemy('Toire no Hanako-san',20,2,50)
@@ -197,7 +197,7 @@ class game(Scene):
 			self.list_moves()
 		if self.enemy.hp <= 0:
 			self.enemy.hp = self.enh
-			user.hp = user._level*10
+			user.hp = hp
 			user.add_xp(self.enemy.xp_yeild)
 			user.gain_money(self.enemy.yen_yeild)
 			self.enemy = None
@@ -209,14 +209,15 @@ class game(Scene):
 				os.remove('save')
 			if os.path.exists('exploration'):
 				os.remove('exploration')
+			self.stop()
 	
 	def attack(self, move):
 		self.enemy.hp -= move.attack+(2*(user._level-1))
-		if self.enemy.hp <= 0:
+		if self.enemy.hp <= 0 or user.hp <= 0:
 			return
 		user.hp -= self.enemy.attack
 		if user.defending:
-			user.hp += self.enemy.attack/2
+			user.hp -= self.enemy.attack/2
 			user.defending = False
 	
 	def shop(self):
@@ -268,6 +269,7 @@ class game(Scene):
 		except: pass
 	
 	def touch_ended(self, touch):
+		global hp
 		x, y = touch.location
 		
 		if y >= self.h-100 and self.in_battle and not self.show_movelist:
@@ -330,6 +332,7 @@ class game(Scene):
 						user.pay(int(price))
 						if re.search((r'HP Expansion'), item):
 							user.hp += 10
+							hp += 10
 							user.save()
 				sy += 30
 		

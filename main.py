@@ -85,7 +85,7 @@ class Location(object):
 
 class Player(object):
 	defending = False
-	def __init__(self, name, gender, cls, level, hp, xppt, yen, familiar):
+	def __init__(self, name, gender, cls, level, hp, xppt, yen, familiar, tainted):
 		self.name = name
 		self.gender = int(gender)
 		self._class = int(cls)
@@ -101,9 +101,9 @@ class Player(object):
 			f.truncate()
 			f.write('{}\n{}\n{}\n{}\n{}\n{}\n{}\n'.format(self.name, self.gender, self._class, self._level, self.hp, self._xp, self.money))
 			if self.familiar:
-				f.write(str(self.familiar.attack))
+				f.write(str(self.familiar.attack)+'\n')
 			else:
-				f.write('None')
+				f.write('None\n')
 			f.write(str(self.tainted) or 'False')
 	def level_up(self):
 		self._level += 1

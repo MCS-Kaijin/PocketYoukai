@@ -235,10 +235,9 @@ class game(Scene):
 		if user.hp <= 0:
 			with open('death.txt','w') as f:
 				f.write('{} was killed by {} at level {}'.format(user.name, self.enemy.name, user._level))
-			if os.path.exists('save'):
-				os.remove('save')
 			if os.path.exists('exploration'):
 				os.remove('exploration')
+			os.remove('save')
 			self.stop()
 	
 	def attack(self, move):
@@ -276,8 +275,9 @@ class game(Scene):
 		y = 30
 		for move in range(0, ((user._level/3)+1)*3):
 			try:
-				self.mv_dictionaries.append({'x': 5, 'y': self.h-y, 'move': self.movelist[move]})
-				y += 30
+				if self.movelist[move].name != 'Summon':
+					self.mv_dictionaries.append({'x': 5, 'y': self.h-y, 'move': self.movelist[move]})
+					y += 30
 			except:
 				pass
 		for move in self.movelist:

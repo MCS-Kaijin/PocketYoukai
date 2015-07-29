@@ -112,10 +112,20 @@ class Player(object):
 		if self._class != 2 and self._level == 10: self._class += 3
 		elif self._class != 2 and self._level == 15: self._class += 2
 		if self._level == 10 and not self.tainted:
-			sp = Special('Pray',100)
+			sp = Special('Pray',82)
 			for move in moves:
 				if move.type == 'magic':
 					moves.remove(move)
+		elif self._level == 11 and not self.tainted:
+			sp = Special('Lightning',115)
+		elif self._level == 12 and not self.tainted:
+			sp = Special('Holy Fire',128)
+		elif self._level == 13 and not self.tainted:
+			sp = Special('Plague',151)
+		elif self._level == 14 and not self.tainted:
+			sp = Special('Death Angel',174)
+		elif self._level == 15 and not self.tainted:
+			sp = Special('God\'s Wrath',222)
 		self.save()
 	def add_xp(self, xppt):
 		self._xp += xppt
@@ -264,9 +274,12 @@ class game(Scene):
 		elif cls == 1: self.movelist = other
 		else: self.movelist = moves
 		y = 0
-		for move in self.movelist:
-			self.mv_dictionaries.append({'x': 5, 'y': self.w-y, 'move': move})
-			y += 30
+		for move in range(0, ((user._level/3)+1)*3):
+			try:
+				self.mv_dictionaries.append({'x': 5, 'y': self.w-y, 'move': self.movelist[move]})
+				y += 30
+			except:
+				pass
 
 	def draw(self):
 		background(0,1,1)

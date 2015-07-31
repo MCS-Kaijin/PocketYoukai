@@ -7,7 +7,6 @@ import sys
 import re
 
 from scene import *
-from time import sleep
 
 nm = ''
 cls = 0
@@ -21,6 +20,7 @@ if not os.path.exists('save'):
 	yen = 0
 	familiar = None
 	tainted = False
+	expansions = 0
 else:
 	with open('save', 'r') as f:
 		nm = f.readline().strip()
@@ -32,6 +32,7 @@ else:
 		yen = int(f.readline().strip())
 		familiar = f.readline().strip()
 		tainted = f.readline().strip()
+		expansions = int(f.readline().strip())
 		class tmp(object):
 			def __init__(self, attack):
 				self.attack = attack
@@ -85,7 +86,7 @@ class Location(object):
 
 class Player(object):
 	defending = False
-	def __init__(self, name, gender, cls, level, hp, xppt, yen, familiar, tainted):
+	def __init__(self, name, gender, cls, level, hp, xppt, yen, familiar, tainted, expansions):
 		self.name = name
 		self.gender = int(gender)
 		self._class = int(cls)
@@ -96,6 +97,7 @@ class Player(object):
 		self.money = int(yen)
 		self.familiar = familiar
 		self.tainted = tainted
+		self.expansions = expansions
 	def save(self):
 		with open('save', 'w') as f:
 			f.truncate()
@@ -105,6 +107,7 @@ class Player(object):
 			else:
 				f.write('None\n')
 			f.write(str(self.tainted) or 'False')
+			f.write('\n{}'.format(self.expansions))
 	def level_up(self):
 		self._level += 1
 		self.hp += self._level*10
@@ -142,7 +145,7 @@ class Player(object):
 	def pay(self, yen):
 		self.money -= yen
 		self.save()
-user = Player(nm, gdr, cls, level, hp, xp, yen, familiar, tainted)
+user = Player(nm, gdr, cls, level, hp, xp, yen, familiar, tainted, expansions)
 user.save()
 
 
@@ -210,6 +213,7 @@ class game(Scene):
 			self.enemy.hp += (user._level*5)
 			self.enemy.attack = (2*user._level)+(user._level-1)
 			self.enh = self.enemy.hp
+			user.hp = hp + (user.expansions*10)
 		stroke(0,0,0)
 		tint(0,0,0)
 		stroke_weight(4)
@@ -227,11 +231,11 @@ class game(Scene):
 			self.list_moves()
 		if self.enemy.hp <= 0:
 			self.enemy.hp = self.enh
-			user.hp = hp
 			user.add_xp(self.enemy.xp_yeild)
 			user.gain_money(self.enemy.yen_yeild)
 			self.enemy = None
 			self.in_battle = False
+			user.save()
 		if user.hp <= 0:
 			with open('death.txt','w') as f:
 				f.write('{} was killed by {} at level {}'.format(user.name, self.enemy.name, user._level))
@@ -255,7 +259,7 @@ class game(Scene):
 	def shop(self):
 		fill(0,1,1)
 		rect(-4,-4,self.w+8,self.h+8)
-		self.shop_items = ['HP Expansion ¥5000','Back']
+		self.shop_items = ['HP Expansion ¥5000','Sell HP ¥-5000','Back']
 		text('¥'+str(user.money),'Courier New',50,5,25,6)
 		y = 30
 		for item in self.shop_items:
@@ -309,7 +313,6 @@ class game(Scene):
 		except: pass
 	
 	def touch_ended(self, touch):
-		global hp
 		x, y = touch.location
 		
 		if y >= self.h-100 and self.in_battle and not self.show_movelist:
@@ -362,19 +365,24 @@ class game(Scene):
 		if self.shopping:
 			sy = 30
 			for item in self.shop_items:
-				if x >= (self.w/2)-((25*len(item))/25) and x <= (self.w/2)+((25*len(item))/25) and y >= self.h-sy and y <= self.h+sy+25:
-					price = re.search((r'[0-9]+'),item)
-					if price: price = price.group()
+				if y >= self.h-sy and y <= self.h+sy+25:
+					price = re.search((r'[0-9-]+'),item)
+					if price:
+						price = price.group()
+						print price
 					if not price:
 						self.shopping = False
 						return
 					if(user.money >= int(price)):
 						user.pay(int(price))
 						if re.search((r'HP Expansion'), item):
-							user.hp += 10
-							hp += 10
+							user.expansions += 1
 							user.save()
-				sy += 30
+						elif re.search((r'Sell HP'), item):
+							print 'hi'
+							user.expansions -= 1
+							user.save()
+					sy += 30
 		
 		if x >= 200 or y >= self.mv_dictionaries[0]['y']+(25/2) and self.show_movelist:
 			self.show_movelist = False

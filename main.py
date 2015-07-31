@@ -365,11 +365,10 @@ class game(Scene):
 		if self.shopping:
 			sy = 30
 			for item in self.shop_items:
-				if y >= self.h-sy and y <= self.h+sy+25:
+				if y >= self.h-sy-(25/2) and y <= self.h-sy+(25/2):
 					price = re.search((r'[0-9-]+'),item)
 					if price:
 						price = price.group()
-						print price
 					if not price:
 						self.shopping = False
 						return
@@ -379,7 +378,6 @@ class game(Scene):
 							user.expansions += 1
 							user.save()
 						elif re.search((r'Sell HP'), item):
-							print 'hi'
 							user.expansions -= 1
 							user.save()
 					sy += 30
